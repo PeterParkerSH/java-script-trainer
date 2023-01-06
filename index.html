@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+
+    <script>
+        var starttimeoverall = new Date().getTime()+100000000;
+        var lessontimer = new Date().getTime();
+
+        let x = setInterval(function() {
+            let now = new Date().getTime();
+            let distanceoverall = now - starttimeoverall;
+            let minutes = Math.floor((distanceoverall /* % (1000 * 60 * 60)*/) / (1000 * 60));
+            let seconds = Math.floor((distanceoverall % (1000 * 60)) / 1000);
+
+            if (distanceoverall >= 0){
+                document.getElementById("countdown").innerHTML = String(minutes)  + ":" + String(seconds).padStart(2, '0');
+            }else{
+                document.getElementById("countdown").innerHTML = "0:00"
+            }
+
+            distanceoverall = lessontimer - now;
+            minutes = Math.floor((distanceoverall) / (1000 * 60));
+            seconds = Math.ceil((distanceoverall % (1000 * 60)) / 1000);
+
+            if (distanceoverall >= 0){
+                document.getElementById("lessoncountdown").innerHTML = String(minutes)  + ":" + String(seconds).padStart(2, '0');
+            }else{
+                document.getElementById("lessoncountdown").innerHTML = "0:00"
+            }
+        }, 1000);
+
+        function say(text){
+            let msg = new SpeechSynthesisUtterance();
+            msg.text = text;
+            msg.lang = 'de';
+            window.speechSynthesis.speak(msg);
+        }
+
+        async function saydelayed(time, text){
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    say(text)
+                    document.getElementById("ausgabe").innerHTML = text;
+                    resolve();
+                }, time);
+            });
+        }
+
+        async function do_exercise(name, description, duration = 30, change = false){
+            duration *= 1000;
+            document.getElementById("uebung").innerHTML = name;
+            document.getElementById("beschreibung").innerHTML = description;
+
+
+            let p = Promise.resolve();
+            p = p.then(() =>lessontimer = new Date().getTime() + 20000);
+            p = p.then(() =>  saydelayed(4000, name));
+            p = p.then(() =>  saydelayed(3000, description));
+
+            p = p.then(() =>  saydelayed(12000, "Und"));
+            p = p.then(() =>  saydelayed(2000, "Los"));
+            p = p.then(() =>lessontimer = new Date().getTime() + duration);
+
+            if (change) {
+                p = p.then(() =>  saydelayed(Math.floor(duration/2) - 2000, "Und"));
+                p = p.then(() =>  saydelayed(2000, "Wechsel"));
+                p = p.then(() =>  saydelayed(Math.floor(duration/2) - 2000, "Und"));
+                p = p.then(() =>  saydelayed(2000, "Fertig"));
+            }else{
+                p = p.then(() =>  saydelayed(duration - 2000, "Und"));
+                p = p.then(() =>  saydelayed(2000, "Fertig"));
+            }
+
+
+            return p;
+        }
+
+        async function workout() {
+            starttimeoverall = new Date().getTime();
+
+            await saydelayed(0, "Los geht's!")
+            await do_exercise("Frontstütz!", "Auf Füße und Ellenbogen und abwechselnd diagonal anheben.")
+            await do_exercise("Seitstütz links!", "Seitlich auf Ellenbogen und Fuß. Oberes Bein heben und senken.")
+            await do_exercise("Seitstütz rechts!", "Seitlich auf Ellenbogen und Fuß. Oberes Bein heben und senken.")
+            await do_exercise("Brücke!", "Auf Schultern und Hacken. Bein lang, anziehen und wieder lang.")
+            await do_exercise("Rückenstrecker!", "Vierfüßler auf Zehenspitzen. Diagonal heben und jeweils 15 Sekunden halten.", 30, true)
+            await do_exercise("Frontstütz 2!", "Liegestütze und Knie dabei an Ellenbogen führen.")
+            await do_exercise("Ruderer!", "Sitzend Beine lang und ranziehen.")
+            await do_exercise("Kletterer!", "In Liegestützposition abwechselnd die Knie an die Brust.")
+            await do_exercise("Twist!", "Auf Po die Hände links und rechts auftippen.")
+            await do_exercise("Käfer!", "In Rückenlage berührt die Hand die dieagonale Hacke.")
+            await do_exercise("Seitstütz 2 mit Außenrotation links!", "Auf Hände und Zehenspitzen. Aufdrehen.")
+            await do_exercise("Seitstütz 2 rechts!", "")
+            await do_exercise("Hüftroller!", "Beine angewinkelt in Rückenlage zu den Seiten führen.")
+            await do_exercise("Rückenvierer!", "In Bauchlage Arme und Beine abheben.")
+            await saydelayed(1000, "Du hast es geschafft! Staune über deine Muskeln im Spiegel!")
+        }
+    </script>
+</head>
+<body>
+
+<h1 id="uebung">Übung</h1>
+<h2 id="beschreibung">Beschreibung</h2>
+<h2 id="ausgabe">Ausgabe</h2>
+<button type="button" onclick="workout()">Start workout</button>
+<p id="countdown">time</p>
+<h2 id="lessoncountdown">countdown</h2>
+</body>
+</html>
